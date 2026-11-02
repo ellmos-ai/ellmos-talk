@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
 import re
 from typing import Any, Callable
 
 from .directives import (
     TalkVisualState,
+     VALID_PERSONAS,
     apply_talk_directive,
     extract_talk_directives,
 )
@@ -152,7 +154,83 @@ class TalkEngine:
 
     def update_visual_state(self, directive: dict[str, Any]) -> TalkVisualState:
         self.state = apply_talk_directive(self.state, directive)
+        if "fast_relay_model" in directive and isinstance(directive["fast_relay_model"], str):
+            self.reflex.model_name = directive["fast_relay_model"].strip()
         return self.state
+
+    def summon_by_model(
+        self,
+        caller: str,
+        message: str,
+        *,
+        emotion: str = "focused",
+        pattern: str = "pulse",
+        emoji_overlay: str = "📻",
+        presence_verified: bool = True,
+        voice_allowed: bool = True,
+    ) -> dict[str, Any]:
+        """Allow a model (Buddha, Claude, Gemini, Codex) to initiate a live Funkgerät/Talk session."""
+        norm_caller = str(caller or "buddha").strip().lower()
+        persona = norm_caller if norm_caller in VALID_PERSONAS else self.state.persona
+        policy = self.state.summon_policy
+        if not voice_allowed or policy == "muted" or self.state.operating_mode == "off":
+            return {
+                "schema": "ellmos.talk.summon.v1",
+                "accepted": False,
+                "delivery": "suppressed",
+                "reason": "muted_or_voice_disabled",
+                "visual_state": self.state.as_dict(),
+            }
+        auto_open = bool(policy == "auto_popup" and presence_verified)
+        delivery = "auto_popup" if auto_open else "knock"
+        summon_payload = {
+            "caller": norm_caller,
+            "persona": persona,
+            "message": str(message or "").strip(),
+            "emotion": emotion,
+            "pattern": pattern,
+            "emoji_overlay": emoji_overlay,
+            "delivery": delivery,
+            "auto_open": auto_open,
+            "presence_verified": presence_verified,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        self.state = apply_talk_directive(
+            self.state,
+            {
+                "persona": persona,
+                "emotion": emotion if emotion in ("calm", "curious", "joyful", "focused", "empathetic", "alert") else "focused",
+                "pattern": pattern if pattern in ("orb", "wave", "rings", "constellation", "pulse") else "pulse",
+                "emoji_overlay": emoji_overlay,
+                "mode": "speaking" if auto_open else "idle",
+                "pending_summon": summon_payload,
+            },
+        )
+        return {
+            "schema": "ellmos.talk.summon.v1",
+            "accepted": True,
+            "delivery": delivery,
+            "summon": summon_payload,
+            "sentences": self.cortex.stream_sentences(summon_payload["message"]),
+            "visual_state": self.state.as_dict(),
+        }
+
+    def acknowledge_summon(self, *, start_listening: bool = True) -> dict[str, Any]:
+        """Accept or clear a pending model summon from the Funkgerät button or companion window."""
+        prev = self.state.pending_summon
+        next_mode = "listening" if start_listening else "idle"
+        self.state = apply_talk_directive(
+            self.state,
+            {
+                "pending_summon": None,
+                "mode": next_mode,
+            },
+        )
+        return {
+            "schema": "ellmos.talk.summon-ack.v1",
+            "acknowledged": prev,
+            "visual_state": self.state.as_dict(),
+        }
 
     def process_turn(self, user_utterance: str, *, model_response: str | None = None) -> TalkTurnResult:
         decision = self.reflex.evaluate_utterance(
@@ -162,7 +240,7 @@ class TalkEngine:
             wake_word=self.state.wake_word,
             wake_word_enabled=self.state.wake_word_enabled,
         )
-        self.state = apply_talk_directive(self.state, {"emotion": decision.emotion_hint})
+        self.state = apply_talk_directive(self.state, {"emotion": decision.emotion_hint, "pending_summon": None})
 
         if decision.action in ("barge_in", "wake_triggered") and model_response is None:
             spoken = decision.backchannel_text or ""

@@ -73,3 +73,39 @@ def test_cli_status_and_turn(capsys):
     turn_out = json.loads(capsys.readouterr().out)
     assert turn_out["visual_state"]["persona"] == "gemini"
     assert len(turn_out["sentence_chunks"]) >= 1
+
+
+
+def test_operating_mode_model_binding_and_summon():
+    engine = TalkEngine()
+    state = engine.update_visual_state(
+        {
+            "operating_mode": "ptt",
+            "bound_slot": "buddha_chat",
+            "primary_model": "qwen3.8:27b-mlx",
+            "fast_relay_model": "gemma4-e2b",
+            "summon_policy": "knock",
+            "language": "ar",
+        }
+    )
+    assert state.operating_mode == "ptt"
+    assert state.primary_model == "qwen3.8:27b-mlx"
+    assert state.fast_relay_model == "gemma4-e2b"
+    assert engine.reflex.model_name == "gemma4-e2b"
+    assert state.language == "ar"
+
+    summon = engine.summon_by_model(
+        "claude",
+        "Deployment auf Mac Studio ist bereit. Wollen wir starten?",
+        emotion="focused",
+        pattern="pulse",
+    )
+    assert summon["accepted"] is True
+    assert summon["delivery"] == "knock"
+    assert engine.state.pending_summon is not None
+    assert engine.state.pending_summon["caller"] == "claude"
+
+    ack = engine.acknowledge_summon(start_listening=True)
+    assert ack["acknowledged"]["caller"] == "claude"
+    assert engine.state.pending_summon is None
+    assert engine.state.mode == "listening"

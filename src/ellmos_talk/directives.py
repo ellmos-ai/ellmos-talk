@@ -10,8 +10,10 @@ from typing import Any
 VALID_PATTERNS = ("orb", "wave", "rings", "constellation", "pulse")
 VALID_EMOTIONS = ("calm", "curious", "joyful", "focused", "empathetic", "alert")
 VALID_MODES = ("listening", "speaking", "thinking", "idle", "muted")
-VALID_LANGUAGES = ("de", "en", "fr", "es", "it", "ja")
+VALID_LANGUAGES = ("de", "en", "es", "fr", "zh", "ja", "ru", "ar", "pt", "hi", "it")
 VALID_PERSONAS = ("buddha", "gemini", "claude", "codex")
+VALID_OPERATING_MODES = ("ptt", "duplex", "wake_word", "off")
+VALID_SUMMON_POLICIES = ("knock", "auto_popup", "muted")
 
 EMOTION_PALETTES: dict[str, dict[str, str]] = {
     "calm": {"primary": "#00d4aa", "secondary": "#0ea5e9", "glow": "rgba(0, 212, 170, 0.38)"},
@@ -39,6 +41,12 @@ class TalkVisualState:
     wake_word: str = "hey buddha"
     wake_word_enabled: bool = True
     speed_hz: float = 1.0
+    operating_mode: str = "ptt"  # "ptt" (Funkgerät) | "duplex" | "wake_word" | "off"
+    bound_slot: str = "buddha_chat"
+    primary_model: str = "qwen3.8:27b-mlx"
+    fast_relay_model: str = "smollm2:360m"
+    summon_policy: str = "knock"  # "knock" | "auto_popup" | "muted"
+    pending_summon: dict[str, Any] | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -124,5 +132,39 @@ def apply_talk_directive(state: TalkVisualState, directive: dict[str, Any]) -> T
         if not 0.1 <= speed <= 5.0:
             raise ValueError("speed_hz must be in [0.1, 5.0]")
         updates["speed_hz"] = speed
+
+    if "operating_mode" in directive:
+        op_mode = str(directive["operating_mode"]).strip().lower()
+        if op_mode not in VALID_OPERATING_MODES:
+            raise ValueError(f"Unsupported operating_mode: {op_mode}")
+        updates["operating_mode"] = op_mode
+        if op_mode == "wake_word":
+            updates["wake_word_enabled"] = True
+
+    if "bound_slot" in directive and isinstance(directive["bound_slot"], str):
+        bs = directive["bound_slot"].strip()
+        if bs:
+            updates["bound_slot"] = bs
+
+    if "primary_model" in directive and isinstance(directive["primary_model"], str):
+        pm = directive["primary_model"].strip()
+        if pm:
+            updates["primary_model"] = pm
+
+    if "fast_relay_model" in directive and isinstance(directive["fast_relay_model"], str):
+        fm = directive["fast_relay_model"].strip()
+        if fm:
+            updates["fast_relay_model"] = fm
+
+    if "summon_policy" in directive:
+        sp = str(directive["summon_policy"]).strip().lower()
+        if sp not in VALID_SUMMON_POLICIES:
+            raise ValueError(f"Unsupported summon_policy: {sp}")
+        updates["summon_policy"] = sp
+
+    if "pending_summon" in directive:
+        ps = directive["pending_summon"]
+        if ps is None or isinstance(ps, dict):
+            updates["pending_summon"] = ps
 
     return replace(state, **updates)
