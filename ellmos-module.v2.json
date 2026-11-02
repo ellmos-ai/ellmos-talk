@@ -1,0 +1,13 @@
+{
+  "schema": "ellmos.module.v2",
+  "id": "ellmos-talk",
+  "name": "ellmos-talk",
+  "version": "0.1.0",
+  "category": "voice-companion",
+  "description": "Dual-loop live speech & visual companion engine for BACH and Open-Ocean.",
+  "repository": "https://github.com/ellmos-ai/ellmos-talk",
+  "entrypoints": {
+    "python": "ellmos_talk.engine",
+    "cli": "ellmos_talk.cli:main"
+  }
+}

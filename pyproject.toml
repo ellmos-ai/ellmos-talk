@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ellmos-talk"
+version = "0.1.0"
+description = "Dual-loop live speech & visual companion engine for BACH and Open-Ocean (Buddha, Gemini, Claude, Codex)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "ellmos-ai" }]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = []
+
+[project.optional-dependencies]
+voice = ["ellmos-voice-io>=0.1.0"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+ellmos-talk = "ellmos_talk.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
