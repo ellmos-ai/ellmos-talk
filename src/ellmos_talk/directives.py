@@ -14,6 +14,28 @@ VALID_LANGUAGES = ("de", "en", "es", "fr", "zh", "ja", "ru", "ar", "pt", "hi", "
 VALID_PERSONAS = ("buddha", "gemini", "claude", "codex")
 VALID_OPERATING_MODES = ("ptt", "duplex", "wake_word", "off")
 VALID_SUMMON_POLICIES = ("knock", "auto_popup", "muted")
+VALID_CLIENT_RUNTIMES = ("browser", "tauri", "mobile", "companion")
+
+DEFAULT_TALK_MODEL_BUNDLE: dict[str, Any] = {
+    "fast_relay_models": [
+        {"id": "smollm2:360m", "provider": "ollama", "size_mb": 250, "default": True, "role": "fast_relay"},
+        {"id": "qwen3-0.6b-voice", "provider": "ollama", "size_mb": 400, "default": False, "role": "fast_relay"},
+        {"id": "gemma4-e2b", "provider": "ollama", "size_mb": 1500, "default": False, "role": "fast_relay"},
+    ],
+    "stt_models": [
+        {"id": "faster-whisper-base", "provider": "ellmos-voice-io", "size_mb": 145, "default": True, "role": "stt"},
+        {"id": "faster-whisper-small", "provider": "ellmos-voice-io", "size_mb": 460, "default": False, "role": "stt"},
+    ],
+    "tts_models": [
+        {"id": "piper-de_DE-thorsten-high", "provider": "ellmos-voice-io", "size_mb": 60, "default": True, "role": "tts_de"},
+        {"id": "piper-en_US-lessac-medium", "provider": "ellmos-voice-io", "size_mb": 60, "default": True, "role": "tts_en"},
+        {"id": "kokoro-82m-v1.0", "provider": "ellmos-voice-io", "size_mb": 80, "default": True, "role": "tts_multilingual"},
+    ],
+    "vad_wake_models": [
+        {"id": "silero-vad-v5", "provider": "ellmos-voice-io", "size_mb": 2, "default": True, "role": "vad"},
+        {"id": "openwakeword-hey-buddha", "provider": "ellmos-voice-io", "size_mb": 5, "default": True, "role": "wake_word"},
+    ],
+}
 
 EMOTION_PALETTES: dict[str, dict[str, str]] = {
     "calm": {"primary": "#00d4aa", "secondary": "#0ea5e9", "glow": "rgba(0, 212, 170, 0.38)"},
@@ -47,6 +69,10 @@ class TalkVisualState:
     fast_relay_model: str = "smollm2:360m"
     summon_policy: str = "knock"  # "knock" | "auto_popup" | "muted"
     pending_summon: dict[str, Any] | None = None
+    input_device_id: str = "default"
+    output_device_id: str = "default"
+    camera_device_id: str = "default"
+    client_runtime: str = "browser"  # "browser" | "tauri" | "mobile" | "companion"
 
     def as_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -166,5 +192,17 @@ def apply_talk_directive(state: TalkVisualState, directive: dict[str, Any]) -> T
         ps = directive["pending_summon"]
         if ps is None or isinstance(ps, dict):
             updates["pending_summon"] = ps
+
+    for dev_field in ("input_device_id", "output_device_id", "camera_device_id"):
+        if dev_field in directive and isinstance(directive[dev_field], str):
+            val = directive[dev_field].strip()
+            if val:
+                updates[dev_field] = val
+
+    if "client_runtime" in directive:
+        cr = str(directive["client_runtime"]).strip().lower()
+        if cr not in VALID_CLIENT_RUNTIMES:
+            raise ValueError(f"Unsupported client_runtime: {cr}")
+        updates["client_runtime"] = cr
 
     return replace(state, **updates)

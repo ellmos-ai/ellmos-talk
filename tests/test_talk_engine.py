@@ -109,3 +109,25 @@ def test_operating_mode_model_binding_and_summon():
     assert ack["acknowledged"]["caller"] == "claude"
     assert engine.state.pending_summon is None
     assert engine.state.mode == "listening"
+
+
+def test_device_selection_tauri_runtime_and_model_bundle():
+    from ellmos_talk.directives import DEFAULT_TALK_MODEL_BUNDLE
+
+    engine = TalkEngine()
+    state = engine.update_visual_state(
+        {
+            "input_device_id": "usb-mic-01",
+            "output_device_id": "headset-out-02",
+            "camera_device_id": "webcam-front",
+            "client_runtime": "tauri",
+        }
+    )
+    assert state.input_device_id == "usb-mic-01"
+    assert state.output_device_id == "headset-out-02"
+    assert state.camera_device_id == "webcam-front"
+    assert state.client_runtime == "tauri"
+    assert any(m["id"] == "smollm2:360m" for m in DEFAULT_TALK_MODEL_BUNDLE["fast_relay_models"])
+    assert any(m["id"] == "faster-whisper-base" for m in DEFAULT_TALK_MODEL_BUNDLE["stt_models"])
+    assert any(m["id"] == "piper-de_DE-thorsten-high" for m in DEFAULT_TALK_MODEL_BUNDLE["tts_models"])
+
