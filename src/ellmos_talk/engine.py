@@ -103,10 +103,10 @@ class FastReflexLoop:
         elif any(w in lower for w in ("fehler", "problem", "kaputt", "error", "urgent")):
             emotion_hint = "focused"
 
-        needs_thinking_bridge = len(text.split()) >= 10
+        needs_thinking_bridge = len(text.split()) >= 5 or "?" in text
         return ReflexDecision(
             action="hand_off_to_cortex",
-            backchannel_text=lang_pack["thinking"] if needs_thinking_bridge else None,
+            backchannel_text=lang_pack["thinking"] if needs_thinking_bridge else lang_pack["ack"],
             emotion_hint=emotion_hint,
         )
 
@@ -229,6 +229,51 @@ class TalkEngine:
         return {
             "schema": "ellmos.talk.summon-ack.v1",
             "acknowledged": prev,
+            "visual_state": self.state.as_dict(),
+        }
+
+    def preview_reflex(
+        self,
+        user_utterance: str,
+        *,
+        persona: str | None = None,
+        language: str | None = None,
+    ) -> dict[str, Any]:
+        """Sub-250ms Stage-1 FastReflexLoop backchannel & visualizer transition prior to DeepCortex completion."""
+        patch: dict[str, Any] = {}
+        if persona and persona.strip().lower() in VALID_PERSONAS:
+            patch["persona"] = persona.strip().lower()
+        if language and language.strip().lower() in ("de", "en", "es", "fr", "zh", "ja", "ru", "ar", "pt", "hi", "it"):
+            patch["language"] = language.strip().lower()
+        if patch:
+            self.update_visual_state(patch)
+        decision = self.reflex.evaluate_utterance(
+            user_utterance,
+            current_mode=self.state.mode,
+            language=self.state.language,
+            wake_word=self.state.wake_word,
+            wake_word_enabled=self.state.wake_word_enabled,
+        )
+        next_mode = "listening" if decision.action in ("barge_in", "wake_triggered") else "thinking"
+        next_pattern = "pulse" if decision.action in ("barge_in", "wake_triggered") else "wave"
+        self.state = apply_talk_directive(
+            self.state,
+            {
+                "mode": next_mode,
+                "emotion": decision.emotion_hint,
+                "pattern": next_pattern,
+                "pending_summon": None,
+            },
+        )
+        ack_text = decision.backchannel_text or ("Verstanden." if self.state.language != "en" else "Got it.")
+        return {
+            "schema": "ellmos.talk.reflex.v1",
+            "reflex": {
+                **decision.as_dict(),
+                "ack_text": ack_text,
+                "latency_target_ms": decision.latency_budget_ms,
+                "fast_model": self.reflex.model_name,
+            },
             "visual_state": self.state.as_dict(),
         }
 

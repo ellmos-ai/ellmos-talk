@@ -131,3 +131,14 @@ def test_device_selection_tauri_runtime_and_model_bundle():
     assert any(m["id"] == "faster-whisper-base" for m in DEFAULT_TALK_MODEL_BUNDLE["stt_models"])
     assert any(m["id"] == "piper-de_DE-thorsten-high" for m in DEFAULT_TALK_MODEL_BUNDLE["tts_models"])
 
+
+
+def test_preview_reflex_backchannel():
+    engine = TalkEngine()
+    out = engine.preview_reflex("Wie ist der aktuelle Status auf dem Mac Studio?", persona="buddha", language="de")
+    assert out["schema"] == "ellmos.talk.reflex.v1"
+    assert out["reflex"]["ack_text"] == "Einen kurzen Moment, ich schaue mir das an."
+    assert out["reflex"]["latency_target_ms"] == 180
+    assert out["reflex"]["fast_model"] == "smollm2:360m"
+    assert out["visual_state"]["mode"] == "thinking"
+    assert out["visual_state"]["emotion"] == "curious"
