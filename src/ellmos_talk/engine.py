@@ -88,7 +88,7 @@ class FastReflexLoop:
                     emotion_hint="curious",
                 )
 
-        if any(tok in lower for tok in ("stop", "stopp", "halt", "warte kurz", "wait")):
+        if re.fullmatch(r"\s*(stop|stopp|halt|warte(?:\s+kurz)?|wait|pause)[.!?\s]*", lower):
             return ReflexDecision(
                 action="barge_in",
                 backchannel_text=lang_pack["barge_in"],

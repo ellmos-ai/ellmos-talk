@@ -94,6 +94,8 @@ def extract_talk_directives(text: str) -> tuple[str, list[dict[str, Any]]]:
         return match.group(0)
 
     cleaned = _DIRECTIVE_RE.sub(_replace, text)
+    cleaned = re.sub(r"<talk_control\b[^>]*>", "", cleaned, flags=re.IGNORECASE | re.DOTALL)
+    cleaned = re.sub(r"<talk_control\b[^\n]*", "", cleaned, flags=re.IGNORECASE)
     cleaned = re.sub(r"[ \t]{2,}", " ", cleaned).strip()
     return cleaned, directives
 
