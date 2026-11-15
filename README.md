@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/banner.svg" alt="ellmos-talk banner" width="100%">
+</p>
+
 # ellmos-talk
 
 **English** | [Deutsch](README_de.md)
