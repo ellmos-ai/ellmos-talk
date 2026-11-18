@@ -1,6 +1,59 @@
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-.pytest_cache/
+*.pyc
+*.pyo
+*.pyd
+*$py.class
+
+# Virtual environments & packaging
+.venv/
+venv/
+env/
 dist/
 build/
 *.egg-info/
+*.egg
+
+# Testing & linters
+.pytest_cache/
+.pytest_temp/
+.pytest_tmp*/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Local secrets & environment
+.env
+.env.*
+.env.local
+
+# Local databases & runtime data
+*.db
+*.sqlite
+*.sqlite3
+data/
+
+# Certificates, keys & credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+.npmrc
+.pypirc
+credentials.json
+secrets.json
+
+# IDE & OS artifacts
+.idea/
+.vscode/
+*.sublime-*
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Multi-agent & fleet lock files
+LOCK*.txt
+LOCK-CACHE*

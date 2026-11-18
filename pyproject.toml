@@ -9,19 +9,31 @@ description = "Dual-loop live speech & visual companion engine for BACH and Open
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "ellmos-ai" }]
 classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Typing :: Typed",
 ]
 dependencies = []
 
+[project.urls]
+Homepage = "https://github.com/ellmos-ai/ellmos-talk"
+Repository = "https://github.com/ellmos-ai/ellmos-talk"
+Changelog = "https://github.com/ellmos-ai/ellmos-talk/blob/main/CHANGELOG.md"
+Security = "https://github.com/ellmos-ai/ellmos-talk/blob/main/SECURITY.md"
+Issues = "https://github.com/ellmos-ai/ellmos-talk/issues"
+
 [project.optional-dependencies]
 voice = ["ellmos-voice-io>=0.1.0"]
-dev = ["pytest>=8.0"]
+dev = ["pytest>=8.0", "ruff>=0.8"]
 
 [project.scripts]
 ellmos-talk = "ellmos_talk.cli:main"
@@ -29,7 +41,10 @@ ellmos-talk = "ellmos_talk.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+ellmos_talk = ["py.typed"]
+
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
-
+norecursedirs = [".git", ".pytest_cache", ".pytest_temp", ".pytest_tmp*", ".ruff_cache", "__pycache__", "build", "dist", ".venv"]
