@@ -24,14 +24,14 @@ __all__ = [
     "VALID_LANGUAGES",
     "VALID_MODES",
     "VALID_PATTERNS",
-    "TalkVisualState",
-    "apply_talk_directive",
-    "extract_talk_directives",
-    "FastReflexLoop",
     "DeepCortexLoop",
+    "FastReflexLoop",
     "ReflexDecision",
     "TalkEngine",
     "TalkTurnResult",
+    "TalkVisualState",
+    "apply_talk_directive",
+    "extract_talk_directives",
 ]
 
 __version__ = "0.1.0"

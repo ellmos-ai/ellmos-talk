@@ -1,13 +1,49 @@
 {
   "schema": "ellmos.module.v2",
   "id": "ellmos-talk",
-  "name": "ellmos-talk",
+  "display_name": "ellmos-talk",
   "version": "0.1.0",
-  "category": "voice-companion",
-  "description": "Dual-loop live speech & visual companion engine for BACH and Open-Ocean.",
-  "repository": "https://github.com/ellmos-ai/ellmos-talk",
+  "category": "runtime",
+  "kind": "runtime",
+  "status": "development",
+  "visibility": "public",
+  "description": "Dual-loop live speech and visual companion engine for BACH and Open Ocean: fast reflex turn-taking plus streaming model replies driven by talk_control directives.",
+  "package": "ellmos-talk",
   "entrypoints": {
     "python": "ellmos_talk.engine",
     "cli": "ellmos_talk.cli:main"
-  }
+  },
+  "provides": [
+    "voice.companion-loop",
+    "voice.turn-taking"
+  ],
+  "requires": [],
+  "optional": [
+    "voice.io"
+  ],
+  "conflicts": [],
+  "surfaces": [
+    "library",
+    "cli",
+    "service"
+  ],
+  "state": {
+    "ownership": "module",
+    "location": "user-home"
+  },
+  "boundaries": {
+    "network": "local",
+    "data": "user-local",
+    "platforms": [
+      "windows",
+      "macos",
+      "linux"
+    ]
+  },
+  "source_of_truth": {
+    "type": "git-repository",
+    "path": ".",
+    "repository": "https://github.com/ellmos-ai/ellmos-talk"
+  },
+  "adapters": []
 }
