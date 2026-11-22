@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
+import re
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
-import re
-from typing import Any, Callable
+from typing import Any, ClassVar
 
 from .directives import (
+    VALID_PERSONAS,
     TalkVisualState,
-     VALID_PERSONAS,
     apply_talk_directive,
     extract_talk_directives,
 )
@@ -43,7 +44,7 @@ class TalkTurnResult:
 class FastReflexLoop:
     """Sub-250ms reflex controller for turn-taking, barge-in, wake-word, and backchanneling."""
 
-    BACKCHANNELS = {
+    BACKCHANNELS: ClassVar[dict[str, dict[str, str]]] = {
         "de": {
             "thinking": "Einen kurzen Moment, ich schaue mir das an.",
             "ack": "Verstanden.",
