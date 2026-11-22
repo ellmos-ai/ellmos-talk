@@ -32,7 +32,7 @@ Security = "https://github.com/ellmos-ai/ellmos-talk/blob/main/SECURITY.md"
 Issues = "https://github.com/ellmos-ai/ellmos-talk/issues"
 
 [project.optional-dependencies]
-voice = ["ellmos-voice-io>=0.1.0"]
+voice = ["ellmos-voice-io @ git+https://github.com/ellmos-ai/ellmos-voice-io.git@dcb4b3bfa83bc8a6c3c1bffc6faa0a9d05195029"]
 dev = ["pytest>=8.0", "ruff>=0.8"]
 
 [project.scripts]
