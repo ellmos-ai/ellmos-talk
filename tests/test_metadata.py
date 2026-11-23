@@ -100,7 +100,20 @@ def test_gitignore_and_release_governance_docs() -> None:
 
 def test_no_personal_home_paths_in_tracked_sources() -> None:
     pattern = re.compile(r"(?:[A-Za-z]:\\Users\\|/Users/|/home/)[^\s\"']+")
-    for rel in ("pyproject.toml", "ellmos-module.v2.json", "README.md", "README_de.md", "SECURITY.md", "TODO.md", "CHANGELOG.md"):
+    for rel in (
+        "pyproject.toml",
+        "ellmos-module.v2.json",
+        "README.md",
+        "README_de.md",
+        "SKILL.md",
+        "llms.txt",
+        "llm.txt",
+        "CODE_OF_CONDUCT.md",
+        "CONTRIBUTING.md",
+        "SECURITY.md",
+        "TODO.md",
+        "CHANGELOG.md",
+    ):
         content = (ROOT / rel).read_text(encoding="utf-8")
         assert not pattern.search(content), f"Personal path leak in {rel}"
 
@@ -139,3 +152,65 @@ def test_summon_by_model_suppression_and_cli_directive(capsys: pytest.CaptureFix
     assert payload["pattern"] == "wave"
     assert payload["emotion"] == "curious"
     assert payload["mode"] == "thinking"
+
+
+def test_p022_llm_entrypoint_files() -> None:
+    skill_text = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+    llms_text = (ROOT / "llms.txt").read_text(encoding="utf-8")
+    llm_text = (ROOT / "llm.txt").read_text(encoding="utf-8")
+
+    assert "name: ellmos-talk" in skill_text
+    assert "ellmos-talk status" in skill_text
+    assert "llms.txt" in llm_text
+    assert "SKILL.md" in llm_text
+    for required in ("Last-checked:", "## Prerequisites", "## Installation", "## Verification", "## Minimal Example"):
+        assert required in llms_text
+
+
+def test_community_governance_and_issue_templates() -> None:
+    coc_text = (ROOT / "CODE_OF_CONDUCT.md").read_text(encoding="utf-8")
+    contrib_text = (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+    bug_tpl = (ROOT / ".github" / "ISSUE_TEMPLATE" / "bug_report.md").read_text(encoding="utf-8")
+    feat_tpl = (ROOT / ".github" / "ISSUE_TEMPLATE" / "feature_request.md").read_text(encoding="utf-8")
+
+    assert "## Deutsch" in coc_text and "## English" in coc_text
+    assert "## Deutsch" in contrib_text and "## English" in contrib_text
+    assert "für" in contrib_text and "Änderung" in contrib_text
+    assert "Tatsächliches Verhalten" in bug_tpl
+    assert "Vorgeschlagene Lösung" in feat_tpl
+
+
+def test_visual_assets_and_svg_integrity() -> None:
+    import xml.etree.ElementTree as ET
+
+    for rel in ("assets/banner.svg", "assets/banner.png", "assets/terminal-workflow.svg"):
+        assert (ROOT / rel).is_file(), f"Missing asset {rel}"
+
+    svg_root = ET.parse(ROOT / "assets" / "terminal-workflow.svg").getroot()
+    assert svg_root.tag.endswith("svg")
+    svg_text = (ROOT / "assets" / "terminal-workflow.svg").read_text(encoding="utf-8")
+    assert "ellmos-talk" in svg_text
+    assert "FastReflexLoop" in svg_text
+
+
+def test_bilingual_readmes_badges_diagrams_and_attribution() -> None:
+    for rel in ("README.md", "README_de.md"):
+        text = (ROOT / rel).read_text(encoding="utf-8")
+        assert "assets/banner.svg" in text
+        assert "assets/terminal-workflow.svg" in text
+        assert "SKILL.md" in text
+        assert "llms.txt" in text
+        assert "```mermaid" in text
+        assert "flowchart LR" in text
+        assert "sequenceDiagram" in text
+        assert "Geiger" in text
+        assert "MARKETING-LOG" not in text
+
+
+def test_pyproject_keywords_and_frozen_version() -> None:
+    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    project = pyproject["project"]
+
+    assert project["version"] == "0.1.0"
+    assert len(project.get("keywords", [])) >= 6
+    assert "Documentation" in project.get("urls", {})

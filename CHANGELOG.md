@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Product skill and LLM discovery entry points (`SKILL.md`, `llms.txt`, `llm.txt`) plus copyable LLM installation prompts in `README.md` and `README_de.md`.
+- Dark-mode CLI & dual-loop workflow vector preview (`assets/terminal-workflow.svg`) while preserving existing header banners (`assets/banner.svg`, `assets/banner.png`).
+- Bilingual community governance documentation (`CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`) and `.github/ISSUE_TEMPLATE/{bug_report.md,feature_request.md}`.
+- Shields.io badges, numbered section navigation, and Mermaid architecture & sequence diagrams in `README.md` and `README_de.md` plus `keywords` / `Documentation` URL in `pyproject.toml`.
+- Path-B discoverability contract tests in `tests/test_metadata.py` (`21 passed` total).
 - Standardized `TODO.md` with release-gate `## STATUS` table (`10/10 PASS` on `final_gate_check.py`).
 - Bilingual `SECURITY.md` (EN/DE) documenting local-only boundaries, allowlist validation, GitHub Private Vulnerability Reporting, and `48h`/`5d`/`30d` SLAs (`INV-SLA-09` & `INV-SLA-10`).
 - PEP 561 typing marker (`src/ellmos_talk/py.typed`), `"Typing :: Typed"` classifier, PEP 639 `license-files = ["LICENSE"]`, `[project.urls]`, and `norecursedirs` in `pyproject.toml`.

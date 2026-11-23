@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 540" width="880" height="540" role="img" aria-labelledby="title desc">
+  <title id="title">ellmos-talk CLI and Dual-Loop Workflow Preview</title>
+  <desc id="desc">Dark terminal preview showing ellmos-talk turn, directive parsing, FastReflexLoop decision, and TalkVisualState JSON output.</desc>
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00d4aa"/>
+      <stop offset="50%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="880" height="540" rx="14" fill="url(#bgGrad)" stroke="#1f2937" stroke-width="2"/>
+  <rect x="0" y="0" width="880" height="42" rx="14" fill="#161f30"/>
+  <rect x="0" y="28" width="880" height="14" fill="#161f30"/>
+  <line x1="0" y1="42" x2="880" y2="42" stroke="#243045" stroke-width="1"/>
+
+  <circle cx="24" cy="21" r="6" fill="#ef4444"/>
+  <circle cx="44" cy="21" r="6" fill="#f59e0b"/>
+  <circle cx="64" cy="21" r="6" fill="#10b981"/>
+  <text x="440" y="26" text-anchor="middle" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600">ellmos-talk — Dual-Loop Conversation &amp; Visual Directive CLI (v0.1.0)</text>
+
+  <!-- Step 1: Turn Command -->
+  <text x="28" y="76" fill="#00d4aa" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="700">$ ellmos-talk turn "Hello" --persona claude --lang en</text>
+  <rect x="28" y="88" width="824" height="176" rx="8" fill="#0d1526" stroke="#1e293b" stroke-width="1"/>
+  <text x="44" y="112" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12">{</text>
+  <text x="60" y="132" fill="#38bdf8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12">"spoken_text"<tspan fill="#cbd5e1">: </tspan><tspan fill="#e2e8f0">"[Claude] I heard you clearly. How would you like to proceed?"</tspan>,</text>
+  <text x="60" y="152" fill="#38bdf8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12">"sentence_chunks"<tspan fill="#cbd5e1">: [</tspan><tspan fill="#a7f3d0">"[Claude] I heard you clearly."</tspan><tspan fill="#cbd5e1">, </tspan><tspan fill="#a7f3d0">"How would you like to proceed?"</tspan><tspan fill="#cbd5e1">],</tspan></text>
+  <text x="60" y="172" fill="#38bdf8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12">"reflex"<tspan fill="#cbd5e1">: { </tspan><tspan fill="#fbbf24">"action": "hand_off_to_cortex"</tspan><tspan fill="#cbd5e1">, </tspan><tspan fill="#e2e8f0">"backchannel_text": "Got it."</tspan><tspan fill="#cbd5e1">, </tspan><tspan fill="#00d4aa">"latency_budget_ms": 180</tspan><tspan fill="#cbd5e1"> },</tspan></text>
+  <text x="60" y="192" fill="#38bdf8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12">"visual_state"<tspan fill="#cbd5e1">: { </tspan><tspan fill="#e2e8f0">"persona": "claude"</tspan><tspan fill="#cbd5e1">, </tspan><tspan fill="#e2e8f0">"mode": "speaking"</tspan><tspan fill="#cbd5e1">, </tspan><tspan fill="#38bdf8">"pattern": "wave"</tspan><tspan fill="#cbd5e1">, </tspan><tspan fill="#38bdf8">"emotion": "curious"</tspan><tspan fill="#cbd5e1"> },</tspan></text>
+  <text x="60" y="212" fill="#38bdf8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12">"applied_directives"<tspan fill="#cbd5e1">: [{ </tspan><tspan fill="#e2e8f0">"emotion": "curious"</tspan><tspan fill="#cbd5e1">, </tspan><tspan fill="#e2e8f0">"pattern": "wave"</tspan><tspan fill="#cbd5e1">, </tspan><tspan fill="#e2e8f0">"emoji_overlay": "✨"</tspan><tspan fill="#cbd5e1"> }]</tspan></text>
+  <text x="44" y="232" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12">}</text>
+  <text x="44" y="252" fill="#64748b" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11"># FastReflexLoop evaluates turn-taking/barge-in in &lt;180 ms; DeepCortexLoop strips &lt;talk_control /&gt; and splits sentences.</text>
+
+  <!-- Step 2: Directive Command -->
+  <text x="28" y="294" fill="#00d4aa" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="700">$ ellmos-talk directive '{"pattern":"wave","emotion":"curious","mode":"thinking"}'</text>
+  <rect x="28" y="306" width="824" height="114" rx="8" fill="#0d1526" stroke="#1e293b" stroke-width="1"/>
+  <text x="44" y="330" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12">{</text>
+  <text x="60" y="350" fill="#38bdf8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12">"persona"<tspan fill="#cbd5e1">: </tspan><tspan fill="#e2e8f0">"buddha"</tspan><tspan fill="#cbd5e1">, </tspan><tspan fill="#38bdf8">"mode"</tspan><tspan fill="#cbd5e1">: </tspan><tspan fill="#fbbf24">"thinking"</tspan><tspan fill="#cbd5e1">, </tspan><tspan fill="#38bdf8">"pattern"</tspan><tspan fill="#cbd5e1">: </tspan><tspan fill="#38bdf8">"wave"</tspan><tspan fill="#cbd5e1">, </tspan><tspan fill="#38bdf8">"emotion"</tspan><tspan fill="#cbd5e1">: </tspan><tspan fill="#38bdf8">"curious"</tspan><tspan fill="#cbd5e1">,</tspan></text>
+  <text x="60" y="370" fill="#38bdf8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12">"color_primary"<tspan fill="#cbd5e1">: </tspan><tspan fill="#38bdf8">"#38bdf8"</tspan><tspan fill="#cbd5e1">, </tspan><tspan fill="#38bdf8">"color_secondary"</tspan><tspan fill="#cbd5e1">: </tspan><tspan fill="#818cf8">"#818cf8"</tspan><tspan fill="#cbd5e1">, </tspan><tspan fill="#38bdf8">"operating_mode"</tspan><tspan fill="#cbd5e1">: </tspan><tspan fill="#e2e8f0">"ptt"</tspan><tspan fill="#cbd5e1">,</tspan></text>
+  <text x="60" y="390" fill="#38bdf8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12">"primary_model"<tspan fill="#cbd5e1">: </tspan><tspan fill="#e2e8f0">"qwen3.8:27b-mlx"</tspan><tspan fill="#cbd5e1">, </tspan><tspan fill="#38bdf8">"fast_relay_model"</tspan><tspan fill="#cbd5e1">: </tspan><tspan fill="#e2e8f0">"smollm2:360m"</tspan><tspan fill="#cbd5e1">, </tspan><tspan fill="#38bdf8">"client_runtime"</tspan><tspan fill="#cbd5e1">: </tspan><tspan fill="#e2e8f0">"browser"</tspan></text>
+  <text x="44" y="410" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12">}</text>
+
+  <!-- Step 3: Architecture Pipeline Strip -->
+  <rect x="28" y="438" width="824" height="74" rx="8" fill="#131d33" stroke="url(#accentGrad)" stroke-width="1.5"/>
+  <text x="48" y="464" fill="#f8fafc" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" font-weight="700">DUAL-LOOP PIPELINE (ZERO RUNTIME DEPENDENCIES · PYTHON STDLIB ONLY)</text>
+  <text x="48" y="490" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12">[Utterance] --&gt; [FastReflexLoop (&lt;180 ms)] --&gt; [DeepCortexLoop] --&gt; [extract_talk_directives] --&gt; [TalkVisualState + Chunks]</text>
+</svg>
