@@ -22,10 +22,23 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Typing :: Typed",
 ]
+keywords = [
+    "voice-agent",
+    "conversational-ai",
+    "dual-loop",
+    "turn-taking",
+    "barge-in",
+    "wake-word",
+    "sentence-streaming",
+    "visual-companion",
+    "local-first",
+    "zero-egress",
+]
 dependencies = []
 
 [project.urls]
 Homepage = "https://github.com/ellmos-ai/ellmos-talk"
+Documentation = "https://github.com/ellmos-ai/ellmos-talk/blob/main/SKILL.md"
 Repository = "https://github.com/ellmos-ai/ellmos-talk"
 Changelog = "https://github.com/ellmos-ai/ellmos-talk/blob/main/CHANGELOG.md"
 Security = "https://github.com/ellmos-ai/ellmos-talk/blob/main/SECURITY.md"

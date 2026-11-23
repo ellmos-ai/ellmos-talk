@@ -6,23 +6,84 @@
 
 **English** | [Deutsch](README_de.md)
 
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Runtime Dependencies: Zero](https://img.shields.io/badge/Dependencies-0%20runtime%20(stdlib)-brightgreen.svg)](pyproject.toml)
+[![Typing: PEP 561](https://img.shields.io/badge/Typing-PEP%20561%20(py.typed)-blue.svg)](src/ellmos_talk/py.typed)
+[![Tests: 21 passed](https://img.shields.io/badge/Tests-21%20passed-brightgreen.svg)](tests/)
+[![Verified: 2026-11-23](https://img.shields.io/badge/Verified-2026--11--23-informational.svg)](CHANGELOG.md)
+[![LLM Ready: llms.txt & SKILL.md](https://img.shields.io/badge/LLM-llms.txt%20%26%20SKILL.md-purple.svg)](llms.txt)
+
 Dual-loop live speech and visual companion engine for the ellmos ecosystem (BACH, Open Ocean). It is a small, dependency-free Python package that holds the **conversation logic**: a fast, rule-based reflex for turn-taking, a sentence-streaming adapter for a main model, and a model-controlled visual state that a companion window can render.
 
-> **Status: early (v0.1.0).** This package contains the engine, the state model and the directive parser. It does **not** contain audio capture, speech-to-text, text-to-speech or the visualization window itself. The default reply of the cortex loop is a canned placeholder unless you inject a responder.
+> **Status: early (v0.1.0).** This package contains the engine, the state model, and the directive parser. It does **not** contain audio capture, speech-to-text, text-to-speech, or the visualization window itself. The default reply of the cortex loop is a canned placeholder unless you inject a responder.
 
-## What it does
+---
 
-1. **`FastReflexLoop`** decides within one call what to do with an utterance: `continue`, `barge_in`, `backchannel`, `hand_off_to_cortex` or `wake_triggered`.
+## Contents
+
+1. [Architecture & Dual-Loop Flow](#sec-01-architecture)
+2. [What It Does](#sec-02-what-it-does)
+3. [Visual State & Model Directives](#sec-03-visual-state)
+4. [Installation](#sec-04-installation)
+5. [Install with Your LLM](#sec-05-llm-install)
+6. [Usage & CLI Workflow Preview](#sec-06-usage)
+7. [Ecosystem & Boundaries](#sec-07-ecosystem)
+8. [Governance, Security & License](#sec-08-governance)
+
+---
+
+<a id="sec-01-architecture"></a>
+## 1. Architecture & Dual-Loop Flow
+
+```mermaid
+flowchart LR
+    U["User Utterance"] --> R["FastReflexLoop (&lt;180 ms)"]
+    R -->|"speaking / stop / wake"| B["Barge-in or Wake Trigger"]
+    B --> V["TalkVisualState (pulse / listening)"]
+    R -->|"hand_off_to_cortex"| C["DeepCortexLoop (Responder)"]
+    C -->|"&lt;talk_control /&gt; + reply"| D["extract_talk_directives()"]
+    D --> V2["TalkVisualState (apply_talk_directive)"]
+    D --> S["sentence_chunks -&gt; TTS Stage"]
+```
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant TalkEngine
+    participant FastReflexLoop
+    participant DeepCortexLoop
+    participant TalkVisualState
+
+    User->>TalkEngine: process_turn(utterance)
+    TalkEngine->>FastReflexLoop: evaluate_utterance(utterance, mode, lang)
+    FastReflexLoop-->>TalkEngine: ReflexDecision (hand_off_to_cortex, 180 ms)
+    TalkEngine->>TalkVisualState: apply emotion_hint and mode=thinking
+    TalkEngine->>DeepCortexLoop: generate_response(utterance, persona, lang)
+    DeepCortexLoop-->>TalkEngine: reply with talk_control JSON tag
+    TalkEngine->>TalkVisualState: extract_talk_directives + apply_talk_directive
+    TalkEngine-->>User: TalkTurnResult (sentence_chunks + visual_state)
+```
+
+---
+
+<a id="sec-02-what-it-does"></a>
+## 2. What It Does
+
+1. **`FastReflexLoop`** decides within one call what to do with an utterance: `continue`, `barge_in`, `backchannel`, `hand_off_to_cortex`, or `wake_triggered`.
    - It is **deterministic and rule-based** (regular expressions and keyword lists). The `model_name` field (default `smollm2:360m`) is stored as a label for a fast relay model; no model is loaded or called in this package.
-   - Speaking mode plus any new input, a bare "stop / stopp / halt / wait / pause", or a bare wake word (default `hey buddha`) produces a barge-in or wake reaction with a short backchannel text (German or English).
+   - Speaking mode plus any new input, a bare `"stop / stopp / halt / wait / pause"`, or a bare wake word (default `hey buddha`) produces a barge-in or wake reaction with a short backchannel text (German or English).
    - Other utterances are handed to the cortex with an emotion hint (`calm`, `curious`, `joyful`, `focused`).
 2. **`DeepCortexLoop`** wraps the main model.
    - `stream_sentences(text)` splits a reply into sentence chunks so a TTS stage can start with the first sentence.
    - `generate_response(...)` calls an optional `responder(prompt, persona, language)` callable that you pass in. Without one, it returns a fixed placeholder reply.
-3. **`TalkEngine`** ties both together with a `TalkVisualState` and offers `process_turn`, `preview_reflex`, `summon_by_model`, `acknowledge_summon`, `update_visual_state` and `status`.
+3. **`TalkEngine`** ties both together with a `TalkVisualState` and offers `process_turn`, `preview_reflex`, `summon_by_model`, `acknowledge_summon`, `update_visual_state`, and `status`.
 4. **`<talk_control {...} />` directives** let the model steer the companion state inline. `extract_talk_directives(text)` removes them from the spoken text and returns the parsed JSON; `apply_talk_directive(state, directive)` validates and applies them.
 
-### Visual state values
+---
+
+<a id="sec-03-visual-state"></a>
+## 3. Visual State & Model Directives
 
 | Field | Allowed values |
 |---|---|
@@ -35,22 +96,51 @@ Dual-loop live speech and visual companion engine for the ellmos ecosystem (BACH
 | `summon_policy` | `knock`, `auto_popup`, `muted` |
 | `client_runtime` | `browser`, `tauri`, `mobile`, `companion` |
 
-Further fields: `emoji_overlay`, `wake_word`, `wake_word_enabled`, `speed_hz` (0.1 to 5.0), `bound_slot`, `primary_model`, `fast_relay_model`, device ids for input, output and camera. Invalid values raise `ValueError`. `DEFAULT_TALK_MODEL_BUNDLE` is a data catalog of suggested relay, STT, TTS and VAD/wake models; nothing here downloads or runs them.
+Further fields: `emoji_overlay`, `wake_word`, `wake_word_enabled`, `speed_hz` (`0.1` to `5.0`), `bound_slot`, `primary_model`, `fast_relay_model`, and device IDs for input, output, and camera. Invalid values raise `ValueError`. `DEFAULT_TALK_MODEL_BUNDLE` is a data catalog of suggested relay, STT, TTS, and VAD/wake models; nothing here downloads or runs them.
 
-A model can open a session via `summon_by_model(...)`: depending on `summon_policy` and presence the result is `auto_popup`, `knock` or `suppressed`.
+A model can open a session via `summon_by_model(...)`: depending on `summon_policy` and presence, the result is `auto_popup`, `knock`, or `suppressed`.
 
-## Installation
+---
+
+<a id="sec-04-installation"></a>
+## 4. Installation
 
 Requires Python 3.10 or newer; there are no runtime dependencies. From a clone:
 
 ```bash
+python -m venv .venv
+# Linux/macOS: source .venv/bin/activate | Windows: .venv\Scripts\activate
 pip install -e .
-# optional extras declared in pyproject.toml
-pip install -e ".[dev]"     # pytest
+
+# Optional extras declared in pyproject.toml
+pip install -e ".[dev]"     # pytest and ruff
 pip install -e ".[voice]"   # declares ellmos-voice-io; not imported by this package yet
 ```
 
-## Usage
+---
+
+<a id="sec-05-llm-install"></a>
+## 5. Install with Your LLM
+
+Copy this prompt into your coding agent or LLM assistant for a verified setup (see [llms.txt](llms.txt) and [SKILL.md](SKILL.md)):
+
+```text
+Install and verify https://github.com/ellmos-ai/ellmos-talk (prefer a pinned commit or release tag, no unverified curl|sh pipes):
+1. Read llms.txt and SKILL.md in the repository root first.
+2. Create an isolated Python 3.10+ environment (.venv) and run the installation command from llms.txt.
+3. Verify the installation with `ellmos-talk --help`, `python -m ellmos_talk.cli status`, and `pytest -ra -v`, then report the results.
+```
+
+Machine-readable entry points: [SKILL.md](SKILL.md) · [llms.txt](llms.txt) · [llm.txt](llm.txt)
+
+---
+
+<a id="sec-06-usage"></a>
+## 6. Usage & CLI Workflow Preview
+
+<p align="center">
+  <img src="assets/terminal-workflow.svg" alt="ellmos-talk CLI workflow and dual-loop output preview" width="100%">
+</p>
 
 ```bash
 ellmos-talk status
@@ -70,12 +160,24 @@ print(result.sentence_chunks)   # ['Let us begin.', 'First, open the project.']
 print(result.visual_state["emotion"])
 ```
 
-Tests live in `tests/test_talk_engine.py` (run with `pytest`).
+Tests live in `tests/test_talk_engine.py` and `tests/test_metadata.py` (run with `pytest -ra -v`).
 
-## Relation to ellmos and Open Ocean
+---
 
-`ellmos-talk` is one of the extension modules listed in the [Open Ocean](https://github.com/ellmos-ai/open-ocean) module map. It is meant to be paired with [ellmos-voice-io](https://github.com/ellmos-ai/ellmos-voice-io) for speech input and output; that wiring is not part of this repository yet. Module metadata is in `ellmos-module.v2.json`.
+<a id="sec-07-ecosystem"></a>
+## 7. Ecosystem & Boundaries
 
-## License
+`ellmos-talk` is one of the extension modules listed in the [Open Ocean](https://github.com/ellmos-ai/open-ocean) module map. It is designed to pair with [ellmos-voice-io](https://github.com/ellmos-ai/ellmos-voice-io) for speech input and output; that wiring is not part of this repository yet. Module metadata lives in [ellmos-module.v2.json](ellmos-module.v2.json).
 
-MIT, as declared in `pyproject.toml`.
+---
+
+<a id="sec-08-governance"></a>
+## 8. Governance, Security & License
+
+- **License:** [MIT](LICENSE), as declared in [pyproject.toml](pyproject.toml)
+- **Security Policy:** [SECURITY.md](SECURITY.md)
+- **Contributing:** [CONTRIBUTING.md](CONTRIBUTING.md)
+- **Code of Conduct:** [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- **Changelog:** [CHANGELOG.md](CHANGELOG.md)
+
+<sub>Concept & Approval: Geiger · Text assistance: LLM-assisted · Graphics: SVG-generated</sub>
